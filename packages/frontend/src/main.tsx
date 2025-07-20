@@ -7,6 +7,7 @@ import { AppRouter } from '@invoice-genie/backend/src/router';
 import App from './App';
 import './index.css';
 
+//TODO: fix typing on this
 const trpc = createTRPCReact<AppRouter>();
 
 const queryClient = new QueryClient({
@@ -18,6 +19,7 @@ const queryClient = new QueryClient({
   },
 });
 
+//TODO: fix typing on this
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
