@@ -12,7 +12,7 @@ function App() {
     <Router>
       <div className="flex h-screen bg-gray-50">
         <Sidebar />
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 ml-16 lg:ml-64 overflow-auto">
           <div className="p-6">
             <Routes>
               <Route path="/" element={<Dashboard />} />
