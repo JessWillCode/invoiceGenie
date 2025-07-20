@@ -9,12 +9,29 @@ import {
   Edit,
   Trash2,
   Download,
-  Send
+  Send,
+  X,
+  Calendar,
+  User,
+  DollarSign,
+  FileText,
+  CheckCircle
 } from 'lucide-react';
+
+interface Invoice {
+  id: string;
+  client: string;
+  amount: number;
+  status: string;
+  issueDate: string;
+  dueDate: string;
+}
 
 const Invoices = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Mock data - replace with tRPC query
   const invoices = [
@@ -74,13 +91,22 @@ const Invoices = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const handleInvoiceClick = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedInvoice(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
-          <p className="text-gray-600">Manage and track all your invoices</p>
         </div>
         <Link
           to="/invoices/create"
@@ -92,7 +118,7 @@ const Invoices = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 -ml-8 md:ml-0">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Search */}
           <div className="flex-1">
@@ -103,7 +129,7 @@ const Invoices = () => {
                 placeholder="Search invoices..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -113,7 +139,7 @@ const Invoices = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             >
               <option value="all">All Status</option>
               <option value="draft">Draft</option>
@@ -126,7 +152,7 @@ const Invoices = () => {
       </div>
 
       {/* Invoices Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden -ml-8 md:ml-0">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -138,25 +164,26 @@ const Invoices = () => {
                   Client
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Amount
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden md:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Amount
+                </th>
+                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Issue Date
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden lg:table-cell px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Due Date
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredInvoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-gray-50">
+                <tr 
+                  key={invoice.id} 
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleInvoiceClick(invoice)}
+                >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{invoice.id}</div>
                   </td>
@@ -164,39 +191,20 @@ const Invoices = () => {
                     <div className="text-sm text-gray-900">{invoice.client}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      ${invoice.amount.toLocaleString()}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
                       {invoice.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="hidden md:table-cell px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      ${invoice.amount.toLocaleString()}
+                    </div>
+                  </td>
+                  <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(invoice.issueDate).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="hidden lg:table-cell px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(invoice.dueDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <Download className="w-4 h-4" />
-                      </button>
-                      <button className="text-gray-400 hover:text-gray-600">
-                        <Send className="w-4 h-4" />
-                      </button>
-                      <button className="text-gray-400 hover:text-red-600">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
                   </td>
                 </tr>
               ))}
@@ -211,6 +219,131 @@ const Invoices = () => {
           </div>
         )}
       </div>
+
+      {/* Invoice Details Modal */}
+      {isModalOpen && selectedInvoice && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Invoice Details</h3>
+              <button
+                onClick={closeModal}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3">
+                  <FileText className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-gray-500">Invoice Number</p>
+                    <p className="font-medium text-gray-900">{selectedInvoice.id}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <User className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-gray-500">Client</p>
+                    <p className="font-medium text-gray-900">{selectedInvoice.client}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <DollarSign className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-gray-500">Amount</p>
+                    <p className="font-medium text-gray-900">${selectedInvoice.amount.toLocaleString()}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-gray-500">Status</p>
+                    <p className="font-medium text-gray-900 capitalize">{selectedInvoice.status}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-gray-500">Due Date</p>
+                    <p className="font-medium text-gray-900">{new Date(selectedInvoice.dueDate).toLocaleDateString()}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                  <div>
+                    <p className="text-sm text-gray-500">Issue Date</p>
+                    <p className="font-medium text-gray-900">{new Date(selectedInvoice.issueDate).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-6 border-t border-gray-200">
+              <div className="flex items-center space-x-2">
+                <button 
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                  onClick={() => {
+                    // Handle view action
+                    closeModal();
+                  }}
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button 
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                  onClick={() => {
+                    // Handle edit action
+                    closeModal();
+                  }}
+                >
+                  <Edit className="w-4 h-4" />
+                </button>
+                <button 
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                  onClick={() => {
+                    // Handle download action
+                    closeModal();
+                  }}
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+                <button 
+                  className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                  onClick={() => {
+                    // Handle send action
+                    closeModal();
+                  }}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+                <button 
+                  className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100"
+                  onClick={() => {
+                    // Handle delete action
+                    closeModal();
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+              <button
+                onClick={closeModal}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
