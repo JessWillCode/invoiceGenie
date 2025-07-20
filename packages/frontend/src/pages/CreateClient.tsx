@@ -66,7 +66,6 @@ const CreateClient = () => {
           </button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Create Client</h1>
-            <p className="text-gray-600">Add a new client to your system</p>
           </div>
         </div>
         <button
