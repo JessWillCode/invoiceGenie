@@ -71,7 +71,7 @@ gcloud services enable iam.googleapis.com
 1. **Create Firestore database**
 
    ```bash
-   gcloud firestore databases create --region=us-central1
+   gcloud firestore databases create --location=us-east5
    ```
 
 2. **Set up security rules** (optional for development)

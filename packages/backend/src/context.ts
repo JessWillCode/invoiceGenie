@@ -1,24 +1,25 @@
 import { CreateExpressContextOptions } from '@trpc/server/adapters/express';
-import { Firestore } from '@google-cloud/firestore';
+import { Client } from 'pg';
+import { Request } from 'express';
 
-export interface Context {
-  db: Firestore;
-  user?: {
-    id: string;
-    email: string;
-  };
+type Context = {
+  db: Client;
+  user?: any;
+};
+
+export const getUserFromRequest = (req: Request) => {
+  // const authHeader = req.headers;
+  console.log(req.headers);
 }
 
 export const createContext = async (opts: CreateExpressContextOptions): Promise<Context> => {
-  const db = new Firestore({
-    projectId: process.env.GOOGLE_CLOUD_PROJECT,
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  const db = new Client({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
   });
-
-  // TODO: Add authentication middleware
-  // For now, return basic context
-  return {
-    db,
-    user: undefined,
-  };
+  await db.connect();
+  const user = await getUserFromRequest(opts.req);
+  return { db, user };
 }; 
